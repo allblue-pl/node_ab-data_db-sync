@@ -1,21 +1,12 @@
-'use strict';
+import { ABDField, abdFields as f } from "ab-data";
+import type TableDef from "ab-data/ts-lib/TableDef.ts";
+import abLog from "ab-log";
+import fs from "fs";
+import path from "path";
+import { findPackage, getETable, type ETable } from "./helpers.ts";
 
-const
-    fs = require('fs'),
-    path = require('path'),
-
-    abData = require('ab-data'),
-    abLog = require('ab-log'),
-    js0 = require('js0'),
-
-    f = abData.fields;
-;
-
-let dbVersion = new abData.DatabaseVersion('mysql', [ 0, 0, 0 ]);
-
-function createEspadaClass (packagePaths, tableDef) {
-    js0.args(arguments, Array, abData.TableDef);
-    
+function createEspadaTableClass(packagePaths: Array<string>, tableDef: TableDef):
+        void {
     let eTable = getETable(tableDef);
 
     let packagePath = findPackage(packagePaths, eTable);
@@ -27,10 +18,10 @@ function createEspadaClass (packagePaths, tableDef) {
     createClass(packagePath, eTable);
     // createClass_Child(packagePath, table);
 };
-module.exports = createEspadaClass;
+export default createEspadaTableClass;
 
 
-function createClass(packagePath, eTable) {
+function createClass(packagePath: string, eTable: ETable): void {
     let pks_Arr = [];
     for (let pk of eTable.table.pks)
         pks_Arr.push(`'${pk}'`);
@@ -38,7 +29,7 @@ function createClass(packagePath, eTable) {
 
     let content = '';
     content += 
-`<?php namespace EC\\${eTable.packageName};
+`<?php namespace EC\\${eTable.packageName}\\_Tables;
 defined('_ESPADA') or die(NO_ACCESS);
 
 use E, EC;
@@ -46,6 +37,20 @@ use EC\\Database;
 use EC\\Database\\MDatabase;
 use EC\\Database\\TTable;
 
+/**
+ *
+ * @phpstan-type _T_R${eTable.fullName} array{`;
+
+    for (let [ columnName, column ] of eTable.table.columns) {
+        let phpStanType = getPHPStanType(column.field);
+
+        content += `
+ *     ${columnName}: ${phpStanType},`;
+    }
+
+    content += `
+ * }
+ */
 class _T${eTable.name} extends TTable {
     public function __construct(MDatabase $db, $tablePrefix = 't') {
         parent::__construct($db, '${eTable.fullName}', $tablePrefix);
@@ -64,13 +69,35 @@ class _T${eTable.name} extends TTable {
         ]);
         $this->setPKs([ ${pks_Str} ]);
     }
+
+    /**
+     *
+     * @param array $row
+     * @return _T_R${eTable.fullName}
+     */
+    public function assertRow(array $row, bool $stripRow = false): array {
+        if ($stripRow)
+            $row = $this->stripRow($row);
+
+        /* @phpstan-ignore return.type */
+        return $row;
+    }
+
+    /**
+     *
+     * @param array $rows
+     * @return array<_T_R${eTable.fullName}>
+     */
+    public function assertRows(array $rows): array {
+        return $rows;
+    }
 }
 `
     ;
 
-    fs.writeFileSync(path.join(packagePath, `classes`, `_T${eTable.name}.php`), 
+    fs.writeFileSync(path.join(packagePath, "classes", "_Tables", `_T${eTable.name}.php`), 
             content);
-    abLog.success(`Saved: ${eTable.fullName}.`);
+    abLog.success(`Saved Table: ${eTable.fullName}.`);
 };
 
 
@@ -112,47 +139,16 @@ class _T${eTable.name} extends TTable {
 //     abLog.success(`Created child for: ${table.fullName}.`);
 // };
 
-
-function findPackage(packagePaths, eTable) {
-    js0.args(arguments, Array, js0.RawObject);
-
-    for (let packagePath of packagePaths) {
-        let dirs = fs.readdirSync(packagePath);
-        for (let dir of dirs) {
-            if (dir === eTable.packageName)
-                return path.join(packagePath, dir);
-        }
-    }
-
-    return null;
-};
-
-function getFieldDeclaration(columnName, field) {
-    js0.args(arguments, 'string', abData.ABDField);
-    
+function getFieldDeclaration(columnName: string, field: ABDField): string {
     return `'${columnName}' => new Database\\F` + getFieldType(field) + ', ';
 }
 
-function getArgsStr(args) {
-    let argsArr = [];
-    for (let arg of args) {
-        if (typeof arg === 'string')
-            argsArr.push(`'${arg}'`);
-        else
-            argsArr.push(String(arg));
-    }
-
-    return argsArr.join(', ');
-}
-
-function getFieldType(field) {
-    js0.args(arguments, abData.ABDField);
-    
+function getFieldType(field: ABDField): string {
     // Array
     if (field instanceof f.ABDAutoIncrementId)
         return `Int(${field.notNull}, true)`;
     else if (field instanceof f.ABDBlob)
-        return `Blob(${field.notNull}, ${field.size})`;
+        return `Blob(${field.notNull}, ${field.type})`;
     else if (field instanceof f.ABDBool)
         return `Bool(${field.notNull})`;
     // else if (field instanceof f.ABDData)
@@ -165,7 +161,7 @@ function getFieldType(field) {
     else if (field instanceof f.ABDFloat)
         return `Float(${field.notNull})`;
     else if (field instanceof f.ABDId)
-        return `Long(${field.notNull})`;
+        return `Long(true)`;
     else if (field instanceof f.ABDInt)
         return `Int(${field.notNull}, ${field.unsigned})`;
     else if (field instanceof f.ABDJSON)
@@ -180,26 +176,43 @@ function getFieldType(field) {
     else if(field instanceof f.ABDText)
         return `Text(${field.notNull}, '${field.type}')`;
 
-    abLog.warn(`Unknown field:`, field);
-    throw new Error('Unknown field');
+    abLog.warn(`Unsupported field:`, field.getType());
+    throw new Error('Unsupported field.');
 }
 
-function getETable(tableDef) {
-    js0.args(arguments, abData.TableDef);
+function getPHPStanType(field: ABDField): string {
+    // Array
+    if (field instanceof f.ABDAutoIncrementId)
+        return `int|null`;
+    else if (field instanceof f.ABDBlob)
+        return `string`;
+    else if (field instanceof f.ABDBool)
+        return `bool` + (field.notNull ? "" : "|null");
+    // else if (field instanceof f.ABDData)
+    //     return `Text(${field.notNull}, 'medium)`;
+    else if (field instanceof f.ABDDate)
+        return `float` + (field.notNull ? "" : "|null");
+    else if (field instanceof f.ABDDateTime)
+        return `float` + (field.notNull ? "" : "|null");
+    // Double
+    else if (field instanceof f.ABDFloat)
+        return `float` + (field.notNull ? "" : "|null");
+    else if (field instanceof f.ABDId)
+        return `float|null`;
+    else if (field instanceof f.ABDInt)
+        return `int` + (field.notNull ? "" : "|null");
+    else if (field instanceof f.ABDJSON)
+        return `string` + (field.notNull ? "" : "|null");
+    else if (field instanceof f.ABDLong)
+        return `float` + (field.notNull ? "" : "|null");
+    // Object
+    else if(field instanceof f.ABDString)
+        return `string` + (field.notNull ? "" : "|null");
+    else if (field instanceof f.ABDTime)
+        return `float` + (field.notNull ? "" : "|null");
+    else if(field instanceof f.ABDText)
+        return `string` + (field.notNull ? "" : "|null");
 
-    let tableName_Arr = tableDef.name.split('_');
-    let prefix = '';
-    while (tableName_Arr[0] === '') {
-        tableName_Arr.splice(0, 1);
-        prefix += '_';
-    }
-
-    tableName_Arr[0] = prefix + tableName_Arr[0];
-
-    return {
-        packageName: tableName_Arr[0],
-        fullName: tableDef.name,
-        name: tableName_Arr.slice(1).join('_'),
-        table: tableDef,
-    };
-};
+    abLog.warn(`Unsupported field:`, field.getType());
+    throw new Error('Unsupported field.');
+}

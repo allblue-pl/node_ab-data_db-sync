@@ -1,0 +1,7 @@
+{
+    "search.exclude": {
+        "index.js": true,
+        "lib/**": true,
+        "ts-types/**": true
+    }
+}

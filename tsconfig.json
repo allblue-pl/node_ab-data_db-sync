@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "allowImportingTsExtensions": true,
+        "declaration": true,
+        "declarationDir": "./ts-types",
+        "emitDeclarationOnly": true,
+        "erasableSyntaxOnly": true,
+        "module": "nodenext",
+        "noImplicitOverride": true,
+        "outDir": ".",
+        "rewriteRelativeImportExtensions": true,
+        "rootDir": ".",
+        "strict": true,
+        "target": "esnext",
+        "typeRoots": [
+            "./node_modules/@types",
+            "./node_modules/ab-matcher/js-types"
+        ],
+        "types": [ "node", "normalize-path", "picomatch" ],
+        "useDefineForClassFields": true,
+        "verbatimModuleSyntax": true
+    },
+    "exclude": [
+        "./lib/**/*",
+        "./tests/**/*",
+        "./ts-types/**/*"
+    ]
+}

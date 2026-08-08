@@ -8,5 +8,11 @@
         "ab-mysql": "",
         "ab-tasks": "",
         "js0": ""
+    },
+    "abTS": {
+        "tsconfig": ".",
+        "libs": [
+            "."
+        ]
     }
 }

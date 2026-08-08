@@ -1,4 +1,9 @@
 {
   "name": "ab-data_db-sync",
-  "version": "0.0.1"
+  "type": "module",
+  "version": "0.0.1",
+  "main": "index.js",
+  "devDependencies": {
+    "@types/node": "26.1.*"
+  }
 }

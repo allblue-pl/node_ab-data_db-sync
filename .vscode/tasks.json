@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "watch-ts",
+            "group": {
+                "kind": "build",
+            },
+            "isBackground": true,
+            "type": "shell",
+            "command": "ab ts-watch",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$abDev"
+            ]
+        }
+    ]
+}

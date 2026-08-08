@@ -7,28 +7,28 @@ import abMySQL, { Database } from "ab-mysql";
 
 import abData, { DatabaseInfo, DataScheme } from "ab-data";
 
-                                                         
-                                                                    
-import { createTSTableClass } from "./ts/createTSTableClass.js";
-import createEspadaTableClass from "./espada/createEspadaTableClass.js";
-import { createDBClass } from "./db/createDBClass.js";
-import sync_Espada_Async, {                 } from "./espada/sync_Espada_Async.js";
-import { sync_DB_Async,             } from "./db/sync_DB_Async.js";
-                                                    
-import sync_TS_Async from "./ts/sync_TS_Async.js";
+import type IndexInfo from "ab-data/ts-lib/IndexInfo.ts";
+import type { DBConnectionInfo } from "ab-mysql/ts-lib/Database.ts";
+import { createTSTableClass } from "./ts/createTSTableClass.ts";
+import createEspadaTableClass from "./espada/createEspadaTableClass.ts";
+import { createDBClass } from "./db/createDBClass.ts";
+import sync_Espada_Async, { type EspadaInfo } from "./espada/sync_Espada_Async.ts";
+import { sync_DB_Async, type DBInfo } from "./db/sync_DB_Async.ts";
+import type { TSInfo } from "./ts/sync_TS_Async.ts";
+import sync_TS_Async from "./ts/sync_TS_Async.ts";
 
 class abData_DBSync_Class {
     constructor() {
         
     }
 
-    async createDatabaseInfo_Async(db          )                        {
+    async createDatabaseInfo_Async(db: Database): Promise<DatabaseInfo> {
         let dbVer = new abData.DatabaseVersion('mysql', [ 0, 0, 1 ])
         let databaseInfo = new abData.DatabaseInfo(dbVer);
 
         let result_ShowTables = await db.query_Select_Async('SHOW TABLES;');
         for (let row of result_ShowTables) {
-            let tableName = row[Object.keys(row)[0]]          ;
+            let tableName = row[Object.keys(row)[0]] as string;
 
             let tableInfo = new abData.TableInfo(tableName);
 
@@ -36,30 +36,30 @@ class abData_DBSync_Class {
                     `DESC \`${tableInfo.name}\`;`);
             for (let row of result_Table) {
                 tableInfo.addFieldInfo(new abData.FieldInfo(
-                    row.Field          ,
-                    (row.Type          ).toLowerCase(),
+                    row.Field as string,
+                    (row.Type as string).toLowerCase(),
                     row.Null === 'NO',
-                    row.Extra          ,
+                    row.Extra as string,
                 ));
             }
 
             let result_TableIndexes = await db.query_Select_Async(
                     `SHOW INDEX FROM \`${tableInfo.name}\`;`);
-            let pks                = [];
-            let indexInfos                                   = {};
+            let pks: Array<string> = [];
+            let indexInfos: {[indexName: string]: IndexInfo} = {};
             for (let row of result_TableIndexes) {
-                let indexName = row.Key_name          ;
+                let indexName = row.Key_name as string;
 
                 if (indexName === 'PRIMARY') {
-                    pks.push(row.Column_name          );
+                    pks.push(row.Column_name as string);
                     continue;
                 }
 
                 if (!(indexName in indexInfos))
                     indexInfos[indexName] = new abData.IndexInfo();
 
-                indexInfos[indexName].addColumnInfo(row.Seq_in_index          , 
-                        row.Column_name          , row.Collation === 'D');
+                indexInfos[indexName].addColumnInfo(row.Seq_in_index as number, 
+                        row.Column_name as string, row.Collation === 'D');
             }
 
             tableInfo.setPKs(pks);
@@ -73,8 +73,8 @@ class abData_DBSync_Class {
         return databaseInfo;
     }
 
-    async exec_Async(scheme            , connectionInfo                  ) 
-                          {
+    async exec_Async(scheme: DataScheme, connectionInfo: DBConnectionInfo):
+            Promise<void> {
         let db = abMySQL.connect(connectionInfo);
         let dbInfo = await this.createDatabaseInfo_Async(db);
         let actions = abData.DatabaseInfo.Compare(scheme, dbInfo);
@@ -202,7 +202,7 @@ class abData_DBSync_Class {
         db.disconnect();
     }
 
-    async sync_Android_Async(scheme            , info             )                {
+    async sync_Android_Async(scheme: DataScheme, info: AndroidInfo): Promise<void> {
         // let packagePaths = [];
         // let packageDirs = fs.readdirSync(path.join(info.path, 'packages'));
         // for (let packageDir of packageDirs)
@@ -214,16 +214,16 @@ class abData_DBSync_Class {
         // }
     }
 
-    async sync_DB_Async(scheme            , info        )                {
+    async sync_DB_Async(scheme: DataScheme, info: DBInfo): Promise<void> {
         await sync_DB_Async(scheme, info);
     }
 
-    async sync_Espada_Async(scheme            , info            )  
-                          {
+    async sync_Espada_Async(scheme: DataScheme, info: EspadaInfo): 
+            Promise<void> {
         await sync_Espada_Async(scheme, info);
     }
 
-    async sync_IOS_Async(scheme            , info         )                {
+    async sync_IOS_Async(scheme: DataScheme, info: IOSInfo): Promise<void> {
         // js0.args(arguments, abData.scheme.DataScheme, js0.RawObject);
         // js0.typeE(info, js0.Preset({
         //     path: 'string',
@@ -239,17 +239,17 @@ class abData_DBSync_Class {
         //     await ios.createIOSClass_Async(info.package, info.path, tableInfo);
     }
 
-    async sync_TS_Async(scheme            , info        )                {
+    async sync_TS_Async(scheme: DataScheme, info: TSInfo): Promise<void> {
         await sync_TS_Async(scheme, info)
     }
 }
 export default new abData_DBSync_Class();
 
-                    
-                    
-                 
-  
+type AndroidInfo = {
+    package: string,
+    path: string,
+};
 
-                
-                 
-  
+type IOSInfo = {
+    path: string,
+};

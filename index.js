@@ -1,4 +1,3 @@
-'use strict';
+import abData_DBSync from "./lib/index.js";
 
-
-module.exports = require('./lib');
+export default abData_DBSync;
