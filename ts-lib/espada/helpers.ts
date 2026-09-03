@@ -1,8 +1,8 @@
-import type { TableDef } from "ab-data";
+import type { TableDef, TableDefVariant } from "ab-data";
 import fs from "node:fs";
 import path from "node:path";
 
-export function findPackage(packagePaths: Array<string>, eTable: ETable): string|null {
+export function findPackage(packagePaths: Array<string>, eTable: ETable|ETableVariant): string|null {
     for (let packagePath of packagePaths) {
         let dirs = fs.readdirSync(packagePath);
         for (let dir of dirs) {
@@ -32,10 +32,36 @@ export function getETable(tableDef: TableDef): ETable {
     };
 };
 
+export function getETableVariant(tableDefVariant: TableDefVariant): ETableVariant {
+    let tableName_Arr = tableDefVariant.name.split('_');
+    let prefix = '';
+    while (tableName_Arr[0] === '') {
+        tableName_Arr.splice(0, 1);
+        prefix += '_';
+    }
+
+    tableName_Arr[0] = prefix + tableName_Arr[0];
+
+    return {
+        packageName: tableName_Arr[0],
+        fullName: tableDefVariant.name,
+        name: tableName_Arr.slice(1).join('_'),
+        tableVariant: tableDefVariant,
+    };
+};
+
 
 export type ETable = {
     packageName: string,
     fullName: string,
     name: string,
     table: TableDef,
+}
+
+
+export type ETableVariant = {
+    packageName: string,
+    fullName: string,
+    name: string,
+    tableVariant: TableDefVariant,
 }

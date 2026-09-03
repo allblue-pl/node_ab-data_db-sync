@@ -1,48 +1,77 @@
-import { ABDField, abdFields as f } from "ab-data";
-                                                       
+import { ABDField, ABDFieldRef, DataScheme, abdFields as f, TableDefVariant, type ABDataDefPreset } from "ab-data";
+import type TableDef from "ab-data/ts-lib/TableDef.ts";
 import abLog from "ab-log";
 import fs from "fs";
 import path from "path";
+import abDataDefToTS from "./abDataDefToTS.ts";
 
-export function createDBClass(destFSPath        , tableDef          )       {
-    createClass(destFSPath, tableDef);
+export function createTSTableVariantClass(scheme: DataScheme, libFSPath: string, 
+        tableDefVariant: TableDefVariant): void {
+    createClass(scheme, libFSPath, tableDefVariant);
 }
 
 
-function createClass(destFSPath        , tableDef          )       {
+function createClass(scheme: DataScheme, libFSPath: string, tableDefVariant: TableDefVariant): void {
     let content =
-`import ts0, { type TS0RawObject } from "@allblue/ts0";
+`import ts0, { type TS0RawArray, type TS0RawObject, type TS0RawValue } from "@allblue/ts0";
 
-export type _T_R${tableDef.name} = [`;
+export type _TVR${tableDefVariant.name} = [`;
 
-    for (let [ columnName, column ] of tableDef.columns) {
-        let tsType = getTSType(column.field);
+    for (let [ columnName, field ] of tableDefVariant.columns) {
+        let tsType = getTSType(scheme, field);
 
         content += `
     ${columnName}: ${tsType},`
+        ;
+    }
+
+    for (let [ columnName, field ] of tableDefVariant.columns_Extra) {
+        let tsType = getTSType(scheme, field);
+
+        content += `
+    ${columnName}?: ${tsType},`
         ;
     }
 
     content += `
 ];
+export const _p_TVR${tableDefVariant.name} = ts0.TPresetArray([`;
 
-export type _T_R${tableDef.name}_JSON = {`;
+    for (let [ columnName, field ] of tableDefVariant.columns) {
+        let tsType = getTS0Type(scheme, field);
 
-    for (let [ columnName, column ] of tableDef.columns) {
-        let tsType = getTSType(column.field);
+        content += `
+    ${tsType},`
+        ;
+    }
+
+    content += `
+]);
+
+export type _TVR${tableDefVariant.name}_JSON = {`;
+
+    for (let [ columnName, field ] of tableDefVariant.columns) {
+        let tsType = getTSType(scheme, field);
 
         content += `
     ${columnName}: ${tsType},`
+        ;
+    }
+
+    for (let [ columnName, field ] of tableDefVariant.columns_Extra) {
+        let tsType = getTSType(scheme, field);
+
+        content += `
+    ${columnName}?: ${tsType},`
         ;
     }
 
     content += `
 };
+export const _p_TVR${tableDefVariant.name}_JSON = ts0.TPreset({`;
 
-export const _p_R${tableDef.name}_JSON = ts0.TPreset({`;
-
-    for (let [ columnName, column ] of tableDef.columns) {
-        let tsType = getTS0Type(column.field);
+    for (let [ columnName, field ] of tableDefVariant.columns) {
+        let tsType = getTS0Type(scheme, field);
 
         content += `
     ${columnName}: ${tsType},`
@@ -50,24 +79,25 @@ export const _p_R${tableDef.name}_JSON = ts0.TPreset({`;
     }
 
     content += `
-});
-`;
+});`;
 
-    fs.writeFileSync(path.join(destFSPath, "$tables", 
-            `_${tableDef.name}.ts`), content);
-    abLog.success(`Saved: ${tableDef.name}.`);
+    fs.writeFileSync(path.join(libFSPath, `$ab-data`, `$table-variants`, 
+            `_T${tableDefVariant.name}.ts`), content.replaceAll("\n", "\r\n"));
+    abLog.success(`Saved: ${tableDefVariant.name}.`);
 }
 
-function getTSType(field          )         {
+export function getTSType(scheme: DataScheme, field_: ABDField|ABDFieldRef): string {
+    let field = scheme.parseField(field_);
+
     if (field instanceof f.ABDAutoIncrementId)
-        return `number`;
+        return `number|null`;
     else if (field instanceof f.ABDBlob)
         return `string` + (field.notNull ? "" : "|null");
     else if (field instanceof f.ABDBool)
         return `boolean` + (field.notNull ? "" : "|null");
-    // else if (field instanceof f.ABDData)
-    //     return `Text(${field.notNull}, 'medium)`;
-    else if (field instanceof f.ABDDate)
+    else if (field instanceof f.ABDData) {
+        return abDataDefToTS.parseType(scheme, field.dataDef, "    ", "skipAll");
+    } else if (field instanceof f.ABDDate)
         return `number` + (field.notNull ? "" : "|null");
     else if (field instanceof f.ABDDateTime)
         return `number` + (field.notNull ? "" : "|null");
@@ -79,7 +109,7 @@ function getTSType(field          )         {
     else if (field instanceof f.ABDInt)
         return `number` + (field.notNull ? "" : "|null");
     else if (field instanceof f.ABDJSON)
-        return `TS0RawObject` + (field.notNull ? "" : "|null");
+        return `TS0RawValue` + (field.notNull ? "" : "|null");
     else if (field instanceof f.ABDLong)
         return `number` + (field.notNull ? "" : "|null");
     // Object
@@ -94,15 +124,18 @@ function getTSType(field          )         {
     throw new Error('Unsupported field.');
 }
 
-function getTS0Type(field          )         {
+export function getTS0Type(scheme: DataScheme, field_: ABDField|ABDFieldRef): string {
+    let field = scheme.parseField(field_);
+
     if (field instanceof f.ABDAutoIncrementId)
-        return `"number"`;
+        return `[ "number", ts0.TNull ]`;
     else if (field instanceof f.ABDBlob)
         return field.notNull ? `"string"` : `["string", ts0.TNull]`;
     else if (field instanceof f.ABDBool)
         return field.notNull ? `"boolean"` : `["boolean", ts0.TNull]`;
-    // else if (field instanceof f.ABDData)
-    //     return `Text(${field.notNull}, 'medium)`;
+    else if (field instanceof f.ABDData) {
+        return field.notNull ? `ts0.TRawValue` : `[ts0.TRawValue, ts0.TNull]`;
+    }
     else if (field instanceof f.ABDDate)
         return field.notNull ? `"number"` : `["number", ts0.TNull]`;
     else if (field instanceof f.ABDDateTime)
@@ -115,7 +148,7 @@ function getTS0Type(field          )         {
     else if (field instanceof f.ABDInt)
         return field.notNull ? `"number"` : `["number", ts0.TNull]`;
     else if (field instanceof f.ABDJSON)
-        return field.notNull ? `ts0.TRawObject` : `[ts0.TRawObject, ts0.TNull]`;
+        return field.notNull ? `ts0.TRawValue` : `[ts0.TRawValue, ts0.TNull]`;
     else if (field instanceof f.ABDLong)
         return field.notNull ? `"number"` : `["number", ts0.TNull]`;
     // Object

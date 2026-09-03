@@ -4,6 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { createTSTableClass } from "./createTSTableClass.ts";
 import createTSRequestClass from "./createTSRequestClass.ts";
+import { createTSTypes } from "./createTSTypes.ts";
+import { createTSTableVariantClass } from "./createTSTableVariantClass.ts";
 
 export default async function sync_TS_Async(scheme: DataScheme, info: TSInfo): 
         Promise<void> {
@@ -13,6 +15,8 @@ export default async function sync_TS_Async(scheme: DataScheme, info: TSInfo):
     abFS.mkdirRecursiveSync(destFSPath);
     abFS.mkdirRecursiveSync(path.join(destFSPath, "$requests"));
     abFS.mkdirRecursiveSync(path.join(destFSPath, "$tables"));
+    abFS.mkdirRecursiveSync(path.join(destFSPath, "$table-variants"));
+    abFS.mkdirRecursiveSync(path.join(destFSPath, "$types"));
 
     let fsDataPaths: Array<string> = [];
     for (let dataPath of info.dataPaths)
@@ -31,13 +35,21 @@ export default async function sync_TS_Async(scheme: DataScheme, info: TSInfo):
     }
 
     for (let tableName of scheme.tableNames)
-        createTSTableClass(info.libFSPath, scheme.getTableDef(tableName));
+        createTSTableClass(scheme, info.libFSPath, scheme.getTableDef(tableName));
+
+    for (let tableVariantName of scheme.tableVariantNames) {
+        createTSTableVariantClass(scheme, info.libFSPath, 
+                scheme.getTableDefVariant(tableVariantName));
+    }
 
     /* Requests */
     for (let requestName of scheme.requestNames) {
         let requestDef = scheme.getRequestDef(requestName);
         createTSRequestClass(scheme, info.libFSPath, requestName, requestDef);
     }
+
+    /* Types */
+    createTSTypes(scheme, info.libFSPath);
 }
 
 export type TSInfo = {

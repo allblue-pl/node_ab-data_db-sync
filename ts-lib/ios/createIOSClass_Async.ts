@@ -97,7 +97,8 @@
 // }
 // `;
 
-//     fs.writeFileSync(path.join(packagePath, `T${table.name}.swift`), content);
+//     fs.writeFileSync(path.join(packagePath, `T${table.name}.swift`), 
+//      content.replaceAll("\n", "\r\n"));
 //     abLog.success(`Saved: ${table.name}.`);
 // };
 
