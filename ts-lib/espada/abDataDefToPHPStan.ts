@@ -191,8 +191,8 @@ export class abDataDefToPHPStan_Class {
 
     parseType_ABDataDefObjectType(scheme: DataScheme|null, type: ABDataDefObjectType, 
             offset: string): string {
-        return "array{...<" + this.parseType(scheme, type.keyType, offset) + ", " +
-                this.parseType(scheme, type.itemType, offset) + ">}";
+        return "array<" + this.parseType(scheme, type.keyType, offset) + ", " +
+                this.parseType(scheme, type.itemType, offset) + ">";
     }
 
     parseType_ABDataDefObjectPresetType(scheme: DataScheme|null, 

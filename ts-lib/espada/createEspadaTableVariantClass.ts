@@ -1,4 +1,4 @@
-import { ABDField, ABDFieldRef, DataScheme, abdFields as f, TableDefVariant } from "ab-data";
+import { ABDField, ABDColumnRef, DataScheme, abdFields as f, TableDefVariant } from "ab-data";
 import type TableDef from "ab-data/ts-lib/TableDef.ts";
 import abLog from "ab-log";
 import fs from "fs";

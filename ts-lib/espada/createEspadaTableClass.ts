@@ -1,4 +1,4 @@
-import { ABDField, ABDFieldRef, DataScheme, abdFields as f } from "ab-data";
+import { ABDField, ABDColumnRef, DataScheme, abdFields as f } from "ab-data";
 import type TableDef from "ab-data/ts-lib/TableDef.ts";
 import abLog from "ab-log";
 import fs from "fs";
@@ -256,6 +256,8 @@ export function getFieldType(field: ABDField): string {
         return `Float(${field.notNull})`;
     else if (field instanceof f.ABDId)
         return `Long(true)`;
+    else if (field instanceof f.ABDIdRef)
+        return `Long(${field.notNull})`;
     else if (field instanceof f.ABDInt)
         return `Int(${field.notNull}, ${field.unsigned})`;
     else if (field instanceof f.ABDJSON)
@@ -274,7 +276,7 @@ export function getFieldType(field: ABDField): string {
     throw new Error('Unsupported field.');
 }
 
-export function getPHPStanType(scheme: DataScheme, field_: ABDField|ABDFieldRef): string {
+export function getPHPStanType(scheme: DataScheme, field_: ABDField|ABDColumnRef): string {
     let field = scheme.parseField(field_);
 
     // Array
@@ -296,6 +298,8 @@ export function getPHPStanType(scheme: DataScheme, field_: ABDField|ABDFieldRef)
         return `float` + (field.notNull ? "" : "|null");
     else if (field instanceof f.ABDId)
         return `float|null`;
+    else if (field instanceof f.ABDIdRef)
+        return `float` + (field.notNull ? "" : "|null");
     else if (field instanceof f.ABDInt)
         return `int` + (field.notNull ? "" : "|null");
     else if (field instanceof f.ABDJSON)

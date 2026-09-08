@@ -64,7 +64,7 @@ class abData_DBSync_Class {
 
     async update_DB_Async(scheme: DataScheme, connectionInfo: DBConnectionInfo):
             Promise<void> {
-        update_DB_Async(scheme, connectionInfo);
+        await update_DB_Async(scheme, connectionInfo);
     }
 }
 export default new abData_DBSync_Class();
