@@ -21,5 +21,5 @@ export function createTSTypes(scheme: DataScheme, libFSPath: string): void {
 
     let fsPath = path.join(libFSPath, `$ab-data`, `$types`, `abTypes.ts`);
     fs.writeFileSync(fsPath, content);
-    abLog.success(`Saved: ${fsPath}.`);
+    // abLog.success(`Saved: ${fsPath}.`);
 }

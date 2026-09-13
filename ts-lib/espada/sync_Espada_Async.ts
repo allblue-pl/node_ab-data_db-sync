@@ -93,7 +93,7 @@ function syncValidatorsAndTableIds(scheme: DataScheme, info: EspadaInfo): void {
     for (let tableName of scheme.tableNames) {
         let tableDef = scheme.getTableDef(tableName);
         validatorInfos[tableName] = tableDef.getValidatorInfos();
-        tableIds[tableName] = tableDef.getTableId();
+        tableIds[tableName] = tableDef.id;
     }
 
     let presetsFSPath = path.join(info.path, "presets", "espada", info.appPkgName);

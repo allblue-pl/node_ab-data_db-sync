@@ -233,8 +233,9 @@ export class abDataDefToTS_Class {
             final: FinalType): string {
         ts0Assert(scheme !== null, "Request Args Type not supported in this definition.");
 
-        let tObjectPreset = new ABDataDefObjectPresetType(scheme.getRequestDef(
-                type.requestName).getActionDef(type.actionName).resultDef);
+        let action = scheme.getRequestDef(type.requestName).getActionDef(
+                type.actionName);
+        let tObjectPreset = new ABDataDefObjectPresetType(action.argsDef);
         return this.parseType(scheme, tObjectPreset, offset,
                 final === "skipAll" ? "skipAll" : "noSkip") +
                 (final === "noSkip" ? "|ABDRequestResult" : "");
@@ -245,9 +246,20 @@ export class abDataDefToTS_Class {
             final: FinalType): string {
         ts0Assert(scheme !== null, "Request Result Type not supported in this definition.");
 
-        let tObjectPreset = new ABDataDefObjectPresetType(scheme.getRequestDef(
-                type.requestName).getActionDef(type.actionName).resultDef);
-        return this.parseType(scheme, tObjectPreset, offset,
+        let action = scheme.getRequestDef(type.requestName).getActionDef(
+                type.actionName);
+
+        let tDataType;
+        if (type.resultType === "success")
+            tDataType = new ABDataDefObjectPresetType(action.successDef);
+        else if (type.resultType === "failure")
+            tDataType = new ABDataDefObjectPresetType(action.failureDef);
+        else {
+            tDataType = [ new ABDataDefObjectPresetType(action.successDef),
+                    new ABDataDefObjectPresetType(action.failureDef), ];
+        }
+                
+        return this.parseType(scheme, tDataType, offset,
                 final === "skipAll" ? "skipAll" : "noSkip") +
                 (final === "noSkip" ? "|ABDRequestResult" : "");
     }
@@ -261,7 +273,7 @@ export class abDataDefToTS_Class {
         let def = `{`;
         for (let [ columnName, column ] of tableDef.columns) {
             def += `\n${offset}    ${columnName}: ` + getTSType(scheme, column.field, 
-                    type.type) + ",";
+                    type.type, offset) + ",";
         }
         def += `\n${offset}}` + (final === "noSkip" ? "|ABDRequestResult" : "");
 

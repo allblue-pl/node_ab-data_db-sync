@@ -82,7 +82,6 @@ export const _p_TR${tableDef.name} = ts0.TPreset({`;
 });
 
 export type _TR${tableDef.name}_Insert = {`;
-
     for (let [ columnName, column ] of tableDef.columns) {
         let tsType = getTSType(scheme, column.field, "insert");
 
@@ -94,7 +93,6 @@ export type _TR${tableDef.name}_Insert = {`;
     content += `
 };
 export const _p_TR${tableDef.name}_Insert = ts0.TPreset({`;
-
     for (let [ columnName, column ] of tableDef.columns) {
         let tsType = getTS0Type(scheme, column.field, "insert");
 
@@ -107,7 +105,6 @@ export const _p_TR${tableDef.name}_Insert = ts0.TPreset({`;
 });
 
 export type _TR${tableDef.name}_Update = {`;
-
     for (let [ columnName, column ] of tableDef.columns) {
         let tsType = getTSType(scheme, column.field, "update");
 
@@ -118,8 +115,8 @@ export type _TR${tableDef.name}_Update = {`;
 
     content += `
 };
-export const _p_TR${tableDef.name}_Update = ts0.TPreset({`;
 
+export const _p_TR${tableDef.name}_Update = ts0.TPreset({`;
     for (let [ columnName, column ] of tableDef.columns) {
         let tsType = getTS0Type(scheme, column.field, "update");
 
@@ -129,15 +126,47 @@ export const _p_TR${tableDef.name}_Update = ts0.TPreset({`;
     }
 
     content += `
-});`;
+});
+
+export type _TR${tableDef.name}_Variant = {`;
+    for (let [ columnName, column ] of tableDef.columns) {
+        let tsType = getTSType(scheme, column.field, "select");
+
+        content += `
+    ${columnName}: ${tsType},`
+        ;
+    }
+
+    for (let [ columnName, column ] of tableDef.columns_Extra) {
+        let tsType = getTSType(scheme, column.field, "select");
+
+        content += `
+    ${columnName}?: ${tsType},`
+        ;
+    }
+
+    content += `
+    [key: string]: any,
+};
+export const _p_TR${tableDef.name}_Variant = ts0.TPreset({`;
+    for (let [ columnName, column ] of tableDef.columns) {
+        let tsType = getTS0Type(scheme, column.field, "select");
+
+        content += `
+    ${columnName}: ${tsType},`
+        ;
+    }
+
+    content += `
+}, ts0.TObject("string", null));`;
 
     fs.writeFileSync(path.join(libFSPath, `$ab-data`, `$tables`, 
             `_T${tableDef.name}.ts`), content.replaceAll("\n", "\r\n"));
-    abLog.success(`Saved: ${tableDef.name}.`);
+    // abLog.success(`Saved: ${tableDef.name}.`);
 }
 
 export function getTSType(scheme: DataScheme, field_: ABDField|ABDColumnRef,
-        type: "select"|"update"|"insert"): string {
+        type: "select"|"update"|"insert", offset = ""): string {
     let field = scheme.parseField(field_);
 
     if (field instanceof f.ABDAutoIncrementId)
@@ -147,7 +176,7 @@ export function getTSType(scheme: DataScheme, field_: ABDField|ABDColumnRef,
     else if (field instanceof f.ABDBool)
         return `boolean` + (field.notNull ? "" : "|null") + (type === "update" ? "|undefined" : "");
     else if (field instanceof f.ABDData) {
-        return abDataDefToTS.parseType(scheme, field.dataDef, "    ", "skipAll");
+        return abDataDefToTS.parseType(scheme, field.dataDef, `${offset}    `, "skipAll");
     } else if (field instanceof f.ABDDate)
         return `number` + (field.notNull ? "" : "|null") + (type === "update" ? "|undefined" : "");
     else if (field instanceof f.ABDDateTime)

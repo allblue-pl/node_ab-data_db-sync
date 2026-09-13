@@ -11,8 +11,14 @@ import { getETable } from "./helpers.ts";
 
 function createEspadaRequestClass(scheme: DataScheme, packagePath: string, 
         namespace: string, requestName: string, requestDef: RequestDef): void {
-    createClass(scheme, packagePath, namespace, requestName, requestDef);
-    // createClass_Child(packagePath, table);
+    
+    try {
+        createClass(scheme, packagePath, namespace, requestName, requestDef);
+    } catch (e) {
+        console.error(abLog.cError(
+                `Error creating espada request '${namespace}:${requestName}'.`), 
+                e);
+    }
 };
 export default createEspadaRequestClass;
 
@@ -35,23 +41,47 @@ function createClass(scheme: DataScheme, packagePath: string, namespace: string,
         content += getPHPStanFromDef(scheme, actionDef.argsDef, tableNames);
 
         content += ` * }
- * @phpstan-type _T_R${requestName}_${actionName}_Result array{
+ * @phpstan-type _T_R${requestName}_${actionName}_Success_Raw array{
  *     _debug?: string,
  *     _message?: string,
 `      
         ;
 
-        content += getPHPStanFromDef(scheme, actionDef.resultDef, tableNames);
+        content += getPHPStanFromDef(scheme, actionDef.successDef, tableNames);
 
         content += ` * }
- * @phpstan-type _T_R${requestName}_${actionName}_Result_Parsed array{
+ * @phpstan-type _T_R${requestName}_${actionName}_Success array{
  *     _debug?: string,
  *     _type: 0|1,
  *     _message: string,
 `;
-        content += getPHPStanFromDef(scheme, actionDef.resultDef, tableNames);
+        content += getPHPStanFromDef(scheme, actionDef.successDef, tableNames);
 
         content += ` * }`;
+
+    content += `
+ * @phpstan-type _T_R${requestName}_${actionName}_Failure_Raw array{
+ *     _debug?: string,
+ *     _message?: string,
+`      
+        ;
+
+        content += getPHPStanFromDef(scheme, actionDef.failureDef, tableNames);
+
+        content += ` * }
+ * @phpstan-type _T_R${requestName}_${actionName}_Failure array{
+ *     _debug?: string,
+ *     _type: 0|1,
+ *     _message: string,
+`;
+        content += getPHPStanFromDef(scheme, actionDef.failureDef, tableNames);
+
+        content += ` * }`;
+
+    content += `
+ * @phpstan-type _T_R${requestName}_${actionName}_Result_Raw _T_R${requestName}_${actionName}_Success_Raw|_T_R${requestName}_${actionName}_Failure_Raw
+ * @phpstan-type _T_R${requestName}_${actionName}_Result _T_R${requestName}_${actionName}_Success|_T_R${requestName}_${actionName}_Failure
+        `;
     }
 
     content += `
@@ -62,8 +92,8 @@ abstract class _R${requestName} extends RRequest {`
     for (let actionName of actionNames) {
         content += `
     /**
-     * @param _T_R${requestName}_${actionName}_Result $result 
-     * @return _T_R${requestName}_${actionName}_Result_Parsed
+     * @param _T_R${requestName}_${actionName}_Failure_Raw $result 
+     * @return _T_R${requestName}_${actionName}_Failure
      */
     static function ${actionName}_Failure(array $result): array {
         $result["_type"] = 1;
@@ -74,8 +104,8 @@ abstract class _R${requestName} extends RRequest {`
     }
 
     /**
-     * @param _T_R${requestName}_${actionName}_Result $result 
-     * @return _T_R${requestName}_${actionName}_Result_Parsed
+     * @param _T_R${requestName}_${actionName}_Success_Raw $result 
+     * @return _T_R${requestName}_${actionName}_Success
      */
     static function ${actionName}_Success(array $result): array {
         $result["_type"] = 0;
@@ -114,7 +144,7 @@ abstract class _R${requestName} extends RRequest {`
         content += `
     /**
      * @param _T_R${requestName}_${actionName}_Args $args
-     * @return _T_R${requestName}_${actionName}_Result_Parsed
+     * @return _T_R${requestName}_${actionName}_Result
      */
     abstract public function action_${actionName}(` + (actionDef.type === "w" ? "CDevice $device, " : "") + `array $args): array;
 `;
@@ -151,7 +181,7 @@ use EC\\ABData\\RRequest;
 
     fs.writeFileSync(path.join(packagePath, namespace, "classes", "_Requests", 
             `_R${requestName}.php`), content.replaceAll("\n", "\r\n"));
-    abLog.success(`Saved Request: ${requestName}.`);
+    // abLog.success(`Saved Request: ${requestName}.`);
 };
 
 function getPHPStanFromDef(scheme: DataScheme, def: ABDataDefPreset, 

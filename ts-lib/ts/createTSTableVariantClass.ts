@@ -84,7 +84,7 @@ export const _p_TVR${tableDefVariant.name} = ts0.TPreset({`;
 
     fs.writeFileSync(path.join(libFSPath, `$ab-data`, `$table-variants`, 
             `_T${tableDefVariant.name}.ts`), content.replaceAll("\n", "\r\n"));
-    abLog.success(`Saved: ${tableDefVariant.name}.`);
+    // abLog.success(`Saved: ${tableDefVariant.name}.`);
 }
 
 // export function getTSType(scheme: DataScheme, field_: ABDField|ABDColumnRef): string {
