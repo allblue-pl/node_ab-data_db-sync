@@ -1,9 +1,6 @@
-import { ts0, ts0Assert } from "@allblue/ts0";
-import { ABDataDefArrayPresetType, ABDataDefArrayType, ABDataDefObjectPresetType, ABDataDefObjectType, ABDataDefTableRowType, ABDataDefTableVariantRowType, DataScheme, type ABDataDefPreset, type ABDataDefValueType } from "ab-data";
-import { abDataDefTypes as t } from "ab-data";
-import { ABDataDefEnumType, ABDataDefJoinType, ABDataDefRequestArgsType, ABDataDefRequestResultType, ABDataDefTypeType } from "ab-data/ts-lib/abDataDefTypes.ts";
+import {ts0Assert } from "@allblue/ts0";
+import { ABDataDefArrayPresetType, ABDataDefArrayType, ABDataDefEnumType, ABDataDefJoinType, ABDataDefMapType, ABDataDefObjectPresetType, ABDataDefObjectType, ABDataDefRequestArgsType, ABDataDefRequestResultType, ABDataDefTableRowType, ABDataDefTableVariantRowType, ABDataDefTypeType, DataScheme, abDataDefTypes as t, type ABDataDefPreset, type ABDataDefValueType } from "ab-data";
 import { getTSType } from "./createTSTableClass.ts";
-import { t_SelectColumnType_Enum } from "ab-data/ts-lib/SelectColumnType.ts";
 
 export class abDataDefToTS_Class {
     constructor() {
@@ -53,6 +50,8 @@ export class abDataDefToTS_Class {
                 return this.parseType_ABDataDefEnumType(scheme, type, offset, final);
             if (type instanceof ABDataDefJoinType)
                 return this.parseType_ABDataDefJoinType(scheme, type, offset, final);
+            if (type instanceof ABDataDefMapType)
+                return this.parseType_ABDataDefMapType(scheme, type, offset, final);
             if (type instanceof ABDataDefObjectType)
                 return this.parseType_ABDataDefObjectType(scheme, type, offset, final);
             if (type instanceof ABDataDefObjectPresetType)
@@ -198,6 +197,14 @@ export class abDataDefToTS_Class {
         content += `\n${offset}}` + (final === "noSkip" ? "|ABDRequestResult" : "");
 
         return content;
+    }
+
+    parseType_ABDataDefMapType(scheme: DataScheme|null, type: ABDataDefMapType, 
+            offset: string, final: FinalType): string {
+        return "Map<" + this.parseType(scheme, type.keyType, offset,
+                "skipAll") + "," + this.parseType(scheme, type.itemType, offset,
+                final === "skipAll" ? "skipAll" : "noSkip") + 
+                ">"  + (final === "noSkip" ? "|ABDRequestResult" : "");
     }
 
     parseType_ABDataDefObjectType(scheme: DataScheme|null, type: ABDataDefObjectType, 

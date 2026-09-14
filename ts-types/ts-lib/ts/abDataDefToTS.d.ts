@@ -1,5 +1,4 @@
-import { ABDataDefArrayPresetType, ABDataDefArrayType, ABDataDefObjectPresetType, ABDataDefObjectType, ABDataDefTableRowType, ABDataDefTableVariantRowType, DataScheme, type ABDataDefPreset, type ABDataDefValueType } from "ab-data";
-import { ABDataDefEnumType, ABDataDefJoinType, ABDataDefRequestArgsType, ABDataDefRequestResultType, ABDataDefTypeType } from "ab-data/ts-lib/abDataDefTypes.ts";
+import { ABDataDefArrayPresetType, ABDataDefArrayType, ABDataDefEnumType, ABDataDefJoinType, ABDataDefMapType, ABDataDefObjectPresetType, ABDataDefObjectType, ABDataDefRequestArgsType, ABDataDefRequestResultType, ABDataDefTableRowType, ABDataDefTableVariantRowType, ABDataDefTypeType, DataScheme, type ABDataDefPreset, type ABDataDefValueType } from "ab-data";
 export declare class abDataDefToTS_Class {
     constructor();
     parseArray(scheme: DataScheme | null, typesArr: Array<ABDataDefValueType>, offset: string, final: FinalType): string;
@@ -9,6 +8,7 @@ export declare class abDataDefToTS_Class {
     parseType_ABDataDefArrayPresetType(scheme: DataScheme | null, type: ABDataDefArrayPresetType, offset: string, final: FinalType): string;
     parseType_ABDataDefEnumType(scheme: DataScheme | null, type: ABDataDefEnumType, offset: string, final: FinalType): string;
     parseType_ABDataDefJoinType(scheme: DataScheme | null, type: ABDataDefJoinType, offset: string, final: FinalType): string;
+    parseType_ABDataDefMapType(scheme: DataScheme | null, type: ABDataDefMapType, offset: string, final: FinalType): string;
     parseType_ABDataDefObjectType(scheme: DataScheme | null, type: ABDataDefObjectType, offset: string, final: FinalType): string;
     parseType_ABDataDefObjectPresetType(scheme: DataScheme | null, type: ABDataDefObjectPresetType, offset: string, final: FinalType): string;
     parseType_ABDataDefRequestArgsType(scheme: DataScheme | null, type: ABDataDefRequestArgsType, offset: string, final: FinalType): string;
