@@ -1,13 +1,13 @@
 {
     "abDependencies": {
-        "ab-data": "",
-        "ab-fs": "",
-        "ab-fs-matcher": "",
-        "ab-fs-watcher": "",
-        "ab-log": "",
-        "ab-mysql": "",
-        "ab-tasks": "",
-        "js0": ""
+        "ab-data": "https://github.com/allblue-pl/js_ab-data",
+        "ab-fs": "https://github.com/allblue-pl/node_ab-fs",
+        "ab-fs-matcher": "https://github.com/allblue-pl/node_ab-fs-matcher",
+        "ab-fs-watcher": "https://github.com/allblue-pl/node_ab-fs-watcher",
+        "ab-log": "https://github.com/allblue-pl/node_ab-log",
+        "ab-mysql": "https://github.com/allblue-pl/node_ab-mysql",
+        "ab-tasks": "https://github.com/allblue-pl/js_ab-tasks",
+        "js0": "https://github.com/allblue-pl/js_js0"
     },
     "abTS": {
         "tsconfig": ".",
