@@ -161,6 +161,17 @@ class _T${eTable.name} extends TTable {
     //     return $rows;
     // }
 
+    /**
+     *
+     * @param _T_TR${eTable.fullName}_Variant $row
+     * @return _T_TR${eTable.fullName}
+     */
+    static public function RawRow(MDatabase $db, array $row): array {
+        $table = new _T${eTable.name}($db);
+
+        return $table->stripRow($row);
+    }
+
 
     public function __construct(MDatabase $db, $tablePrefix = '${eTable.table.alias}') {
         parent::__construct($db, '${eTable.fullName}', $tablePrefix);
