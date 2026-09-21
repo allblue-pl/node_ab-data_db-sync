@@ -5,6 +5,5 @@ export type EspadaInfo = {
     appPkgName: string;
     requestsPath: string;
     requestsNamespace: string;
-    typesPath: string;
-    typesNamespace: string;
+    esitePath: string;
 };

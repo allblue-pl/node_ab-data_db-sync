@@ -24,8 +24,11 @@ export class abDataDefToPHPStan_Class {
         let content = "";
 
         for (let name in presets) {
-            content += offset + `${name}: ` + this.parseType(scheme, presets[name], 
-                    offset) + ",\n";
+            let name_Escaped = name;
+            if (name_Escaped[0] === "$")
+                name_Escaped = `"${name_Escaped}"`;
+            content += offset + `${name_Escaped}: ` + this.parseType(scheme, 
+                    presets[name], offset) + ",\n";
         }
 
         return content
@@ -67,7 +70,7 @@ export class abDataDefToPHPStan_Class {
         }
 
         if (type === "bool")
-            return "boolean";
+            return "bool";
         if (type === "float")
             return "float";
         if (type === "string")
@@ -201,7 +204,7 @@ export class abDataDefToPHPStan_Class {
         content += this.parsePreset(scheme, type.presets, offset + "    ");
 
         if (type.extras !== null) {
-            content += "...<" + this.parseType(scheme, type.extras.keyType, offset) + ", " + this.parseType(scheme, 
+            content += `${offset}    ...<` + this.parseType(scheme, type.extras.keyType, offset) + ", " + this.parseType(scheme, 
                     type.extras.itemType, offset) + ">\n";
         }
 

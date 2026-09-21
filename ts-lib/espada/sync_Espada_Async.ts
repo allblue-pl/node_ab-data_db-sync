@@ -75,8 +75,8 @@ export default async function sync_Espada_Async(scheme: DataScheme, info: Espada
     }
 
     /* Types */
-    let typesFSPath = path.join(info.typesPath, info.typesNamespace, "classes",
-            "_Types");
+    let typesFSPath = path.join(info.esitePath, "packages", "ab-data-types", 
+            "ABDataTypes", "classes", "_Types");
     if (fs.existsSync(typesFSPath))
         abFS.rmdirRecursiveSync(typesFSPath);
     abFS.mkdirRecursiveSync(typesFSPath);
@@ -114,6 +114,5 @@ export type EspadaInfo = {
     requestsPath: string,
     requestsNamespace: string,
 
-    typesPath: string,
-    typesNamespace: string,
+    esitePath: string,
 };

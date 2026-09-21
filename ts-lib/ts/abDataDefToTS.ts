@@ -13,7 +13,7 @@ export class abDataDefToTS_Class {
 
         for (let type of typesArr) {
             typeStrs.push(this.parseType(scheme, type, offset, 
-                    final === "skipAll" ? "skipAll" : "noSkip"));
+                    final === "skipAll" ? "skipAll" : "skipOne"));
         }
 
         return typeStrs.join("|") + (final === "noSkip" ? "|ABDRequestResult" : "");
@@ -100,7 +100,7 @@ export class abDataDefToTS_Class {
                     final === "skipAll" ? "skipAll" : "noSkip"));
         }
 
-        return "Array<" + typeStrs.join(",") + ">" + (final === "noSkip" ? "|ABDRequestResult" : "");
+        return "[" + typeStrs.join(",") + "]" + (final === "noSkip" ? "|ABDRequestResult" : "");
     }
 
     parseType_ABDataDefEnumType(scheme: DataScheme|null, type: ABDataDefEnumType, 
@@ -219,12 +219,17 @@ export class abDataDefToTS_Class {
     parseType_ABDataDefObjectPresetType(scheme: DataScheme|null, 
             type: ABDataDefObjectPresetType, offset: string, 
             final: FinalType): string {
+        if (Object.keys(type.presets).length === 0 && type.extras?.itemType === null) {
+            return "Record<PropertyKey, never>;" + 
+                    (final === "noSkip" ? "|ABDRequestResult" : "");
+        }
+
         let content = "{\n";
         content += this.parsePreset(scheme, type.presets, offset + "    ", 
                 final === "skipAll" ? "skipAll" : "noSkip");
 
         if (type.extras !== null) {
-            content += "[key: " + this.parseType(scheme, type.extras.keyType, offset, 
+            content += `${offset}    [key: ` + this.parseType(scheme, type.extras.keyType, offset, 
                     final === "skipAll" ? "skipAll" : "noSkip") + "]: " + 
                     this.parseType(scheme, type.extras.itemType, offset, 
                     final === "skipAll" ? "skipAll" : "noSkip") + "\n";
