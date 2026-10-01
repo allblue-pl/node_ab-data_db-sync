@@ -1,4 +1,4 @@
-import { ABDataDefArrayPresetType, ABDataDefArrayType, ABDataDefEnumType, ABDataDefJoinType, ABDataDefMapType, ABDataDefObjectPresetType, ABDataDefObjectType, ABDataDefRequestArgsType, ABDataDefRequestResultType, ABDataDefTableRowType, ABDataDefTableVariantRowType, ABDataDefTypeType, DataScheme, type ABDataDefPreset, type ABDataDefValueType } from "ab-data";
+import { ABDataDefArrayPresetType, ABDataDefArrayType, ABDataDefEnumType, ABDataDefJoinType, ABDataDefMapType, ABDataDefObjectPresetType, ABDataDefObjectType, ABDataDefRequestArgsType, ABDataDefRequestResultType, ABDataDefTableColumnType, ABDataDefTableRowType, ABDataDefTableVariantRowType, ABDataDefTypeType, DataScheme, type ABDataDefPreset, type ABDataDefValueType } from "ab-data";
 export declare class abDataDefToTS_Class {
     constructor();
     parseArray(scheme: DataScheme | null, typesArr: Array<ABDataDefValueType>, offset: string, final: FinalType): string;
@@ -13,6 +13,7 @@ export declare class abDataDefToTS_Class {
     parseType_ABDataDefObjectPresetType(scheme: DataScheme | null, type: ABDataDefObjectPresetType, offset: string, final: FinalType): string;
     parseType_ABDataDefRequestArgsType(scheme: DataScheme | null, type: ABDataDefRequestArgsType, offset: string, final: FinalType): string;
     parseType_ABDataDefRequestResultType(scheme: DataScheme | null, type: ABDataDefRequestResultType, offset: string, final: FinalType): string;
+    parseType_ABDataDefTableColumnType(scheme: DataScheme | null, type: ABDataDefTableColumnType, offset: string, final: FinalType): string;
     parseType_ABDataDefTableRowType(scheme: DataScheme | null, type: ABDataDefTableRowType, offset: string, final: FinalType): string;
     parseType_ABDataDefTableVariantRowType(scheme: DataScheme | null, type: ABDataDefTableVariantRowType, offset: string, final: FinalType): string;
     parseType_ABDataDefTypeType(scheme: DataScheme | null, type: ABDataDefTypeType, offset: string, final: FinalType): string;

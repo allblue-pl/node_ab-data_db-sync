@@ -18,7 +18,7 @@ function createClass(scheme: DataScheme, libFSPath: string, tableDef: TableDef):
 export type _TR${tableDef.name}_Arr = [`;
 
     for (let [ columnName, column ] of tableDef.columns) {
-        let tsType = getTSType(scheme, column.field, "insert");
+        let tsType = getTSType(scheme, column.field, "select");
 
         content += `
     ${columnName}: ${tsType},`
@@ -26,7 +26,7 @@ export type _TR${tableDef.name}_Arr = [`;
     }
 
     for (let [ columnName, column ] of tableDef.columns_Extra) {
-        let tsType = getTSType(scheme, column.field, "insert");
+        let tsType = getTSType(scheme, column.field, "select");
 
         content += `
     ${columnName}?: ${tsType},`
@@ -38,7 +38,7 @@ export type _TR${tableDef.name}_Arr = [`;
 export const _p_TR${tableDef.name}_Arr = ts0.TPresetArray([`;
 
     for (let [ columnName, column ] of tableDef.columns) {
-        let tsType = getTS0Type(scheme, column.field, "insert");
+        let tsType = getTS0Type(scheme, column.field, "select");
 
         content += `
     ${tsType},`
@@ -181,6 +181,11 @@ export function getTSType(scheme: DataScheme, field_: ABDField|ABDColumnRef,
         return `number` + (field.notNull ? "" : "|null") + (type === "update" ? "|undefined" : "");
     else if (field instanceof f.ABDDateTime)
         return `number` + (field.notNull ? "" : "|null") + (type === "update" ? "|undefined" : "");
+    else if (field instanceof f.ABDEnum) {
+        return field.values.map((value) => `"${value}"`).join("|") +
+                (field.notNull ? "" : "|null") + 
+                (type === "update" ? "|undefined" : "");
+    }
     // Double
     else if (field instanceof f.ABDFloat)
         return `number` + (field.notNull ? "" : "|null") + (type === "update" ? "|undefined" : "");
@@ -206,6 +211,7 @@ export function getTSType(scheme: DataScheme, field_: ABDField|ABDColumnRef,
     throw new Error('Unsupported field.');
 }
 
+/* NOT NULLS SHOULD BE DEPENDANT ON field.notNull. FIX IT! */
 export function getTS0Type(scheme: DataScheme, field_: ABDField|ABDColumnRef, 
         type: "select"|"update"|"insert"): string {
     let field = scheme.parseField(field_);
@@ -265,6 +271,17 @@ export function getTS0Type(scheme: DataScheme, field_: ABDField|ABDColumnRef,
                 return `[ "number", ts0.TNull, "undefined" ]`;
             case "insert":
                 return `[ "number", ts0.TNull ]`;
+        }
+    } else if (field instanceof f.ABDEnum) {
+        let values_Str = field.values.map((value) => `"${value}"`).join(", ");
+
+        switch (type) {
+            case "select":
+                return `ts0.TEnum([ ${values_Str} ])`;
+            case "update":
+                return `[ ts0.TEnum([ ${values_Str} ]), ts0.TNull, "undefined" ]`;
+            case "insert":
+                return `[ ts0.TEnum([ ${values_Str} ]), ts0.TNull ]`;
         }
     // Double
     } else if (field instanceof f.ABDFloat) {

@@ -1,5 +1,5 @@
 import { ABDataDefArrayPresetType, ABDataDefArrayType, ABDataDefObjectPresetType, ABDataDefObjectType, ABDataDefTableRowType, ABDataDefTableVariantRowType, DataScheme, type ABDataDefPreset, type ABDataDefValueType } from "ab-data";
-import { ABDataDefEnumType, ABDataDefJoinType, ABDataDefRequestArgsType, ABDataDefRequestResultType, ABDataDefTypeType } from "ab-data/ts-lib/abDataDefTypes.ts";
+import { ABDataDefEnumType, ABDataDefJoinType, ABDataDefRequestArgsType, ABDataDefRequestResultType, ABDataDefTableColumnType, ABDataDefTypeType } from "ab-data/ts-lib/abDataDefTypes.ts";
 export declare class abDataDefToPHPStan_Class {
     constructor();
     parseArray(scheme: DataScheme | null, typesArr: Array<ABDataDefValueType>, offset: string): string;
@@ -13,6 +13,7 @@ export declare class abDataDefToPHPStan_Class {
     parseType_ABDataDefObjectPresetType(scheme: DataScheme | null, type: ABDataDefObjectPresetType, offset: string): string;
     parseType_ABDataDefRequestArgsType(scheme: DataScheme | null, type: ABDataDefRequestArgsType, offset: string): string;
     parseType_ABDataDefRequestResultType(scheme: DataScheme | null, type: ABDataDefRequestResultType, offset: string): string;
+    parseType_ABDataDefTableColumnType(scheme: DataScheme | null, type: ABDataDefTableColumnType, offset: string): string;
     parseType_ABDataDefTableRowType(scheme: DataScheme | null, type: ABDataDefTableRowType, offset: string): string;
     parseType_ABDataDefTableVariantRowType(scheme: DataScheme | null, type: ABDataDefTableVariantRowType, offset: string): string;
     parseType_ABDataDefTypeType(scheme: DataScheme | null, type: ABDataDefTypeType, offset: string): string;
